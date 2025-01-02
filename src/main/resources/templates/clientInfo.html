@@ -69,7 +69,7 @@
           <div th:each="orderData, orderStat : ${orders}">
             <tr>
               <th scope="row"><a th:text="${orderData.getId()}" th:href="${'/order/info/' + orderData.getId()}">0</a></th>
-              <td sec:authorize="hasRole('ROLE_OWNER')"><a th:text="${orderData.getManagerId()}" >менеджер_err</a></td>
+              <td sec:authorize="hasRole('ROLE_OWNER')"><a th:text="${orderData.getManagerUsername()}" >менеджер_err</a></td>
               <td><a th:text="${orderData.getPaymentStatus()}">статус_err</a></td>
               <td><a th:text="${orderData.getComment()}">комментарий_err</a></td>
               <td><a th:text="${orderData.getDateEnd()}">дата_выдачи_err</a></td>

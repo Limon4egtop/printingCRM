@@ -1,7 +1,5 @@
 package ru.limon4egtop.printingCRM.models;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +18,8 @@ public class Orders {
     private LocalDate dateCreate;
     private LocalDate dateEnd;
     private Machine machine;
+    private Boolean isSentPrinting;
+    private Boolean isPrinted;
 
     public Orders(Long id, Long clientId, String managerUsername, String paymentStatus, String comment, LocalDate dateCreate, LocalDate dateEnd, Machine machine) {
         this.id = id;
@@ -30,10 +30,14 @@ public class Orders {
         this.dateCreate = dateCreate;
         this.dateEnd = dateEnd;
         this.machine = machine;
+        this.isSentPrinting = false;
+        this.isPrinted = false;
     }
 
     public Orders() {
         this.dateCreate = LocalDate.now();
+        this.isSentPrinting = false;
+        this.isPrinted = false;
     }
 
 
@@ -53,11 +57,11 @@ public class Orders {
         this.clientId = clientId;
     }
 
-    public String getManagerId() {
+    public String getManagerUsername() {
         return managerUsername;
     }
 
-    public void setManagerId(String managerId) {
+    public void setManagerUsername(String managerId) {
         this.managerUsername = managerId;
     }
 
@@ -99,5 +103,21 @@ public class Orders {
 
     public void setMachine(Machine machine) {
         this.machine = machine;
+    }
+
+    public Boolean getSentPrinting() {
+        return isSentPrinting;
+    }
+
+    public void setSentPrinting(Boolean sentPrinting) {
+        isSentPrinting = sentPrinting;
+    }
+
+    public Boolean getPrinted() {
+        return isPrinted;
+    }
+
+    public void setPrinted(Boolean printed) {
+        isPrinted = printed;
     }
 }

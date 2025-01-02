@@ -74,7 +74,7 @@
                             <tr>
                                 <th scope="row"><a th:text="${orderData.getId()}" th:href="${'/order/info/' + orderData.getId()}">0</a></th>
                                 <td><a th:text="${clientsMap.get(orderData.getClientId())}">заказчик_err</a></td>
-                                <td sec:authorize="hasRole('ROLE_OWNER')"><a th:text="${employeeMap.get(orderData.getManagerId())}">менеджер_err</a></td>
+                                <td sec:authorize="hasRole('ROLE_OWNER')"><a th:text="${employeeMap.get(orderData.getManagerUsername())}">менеджер_err</a></td>
                                 <td><a th:text="${orderData.getPaymentStatus()}">статус_err</a></td>
                                 <td>
                                     <a th:text="${orderData.getComment()}"

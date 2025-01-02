@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta charset="UTF-8">
     <title th:text="'Заказ ' + ${orderInfo.getId()}" th:if="${orderInfo != null}">Order Info</title>
@@ -23,11 +23,11 @@
             <div class="col-sm-9 p-3">
                 <table class="table caption-top table-bordered table-hover table-striped">
                     <tbody>
-                    <tr>
+                    <tr sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">
                         <th>Счет на оплату</th>
                         <td><a th:text="Счет" th:href="${'/order/info/downloadFile/' + orderInfo.getId() + '/scope'}">Счет на оплату</a></td>
                     </tr>
-                    <tr>
+                    <tr sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">
                         <th>Статус платежа</th>
                         <td><a th:text="${orderInfo.getPaymentStatus()}">Status_error</a></td>
                     </tr>
@@ -56,11 +56,12 @@
                         <th>Дата выдачи заказа</th>
                         <td><a th:text="${orderInfo.getDateEnd()}"></a>
                     </tr>
+
                     </tbody>
                 </table>
-                <a class="btn btn-warning" th:href="@{/order/edit/{orderId}(orderId=${orderInfo.getId()})}" role="button">Редактировать</a>
+                <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')" class="btn btn-warning" th:href="@{/order/edit/{orderId}(orderId=${orderInfo.getId()})}" role="button">Редактировать</a>
             </div>
-            <div class="col-3 p-3">
+            <div class="col-3 p-3" sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">
                 <table class="table caption-top table-bordered table-hover table-striped">
                     <tbody>
                     <tr>

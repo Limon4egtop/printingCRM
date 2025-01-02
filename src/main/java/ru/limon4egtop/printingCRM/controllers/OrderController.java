@@ -168,7 +168,7 @@ public class OrderController {
             return new RedirectView("/errorClientNameNull");
         }
         newOrder.setClientId(clientId);
-        newOrder.setManagerId(getAuthenticationUserId());
+        newOrder.setManagerUsername(getAuthenticationUserId());
         Long orderId = orderRepo.save(newOrder).getId();
         String staticFolderPath = "/Users/vladimirfilimonov/IdeaProjects/printingCRM/src/main/resources/static";
         saveScore(score, orderId, staticFolderPath);
@@ -322,9 +322,16 @@ public class OrderController {
         if (order == null) {
             throw new IllegalArgumentException("Order not found: " + orderId);
         }
-        return order.getManagerId().equals(username) ||
-                employeeRepo.findByUsername(username).getAuthorities().stream()
-                        .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"));
+
+        boolean isPrinterWithAccess = employeeRepo.findByUsername(username).getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("[ROLE_PRINTER]")) && Boolean.TRUE.equals(order.getSentPrinting());
+
+        boolean isUserOwner = employeeRepo.findByUsername(username).getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"));
+
+        return order.getManagerUsername().equals(username) ||
+                isUserOwner ||
+                isPrinterWithAccess;
     }
 }
 
