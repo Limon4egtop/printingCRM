@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="'Редактирование клиента ' + ${client.getId()}" th:if="${client != null}"></title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+  <script>
+    function addNewClientFields() {
+      const clientFields = document.getElementById('newClientFields');
+      clientFields.style.display = 'block';
+    }
+  </script>
+</head>
+<body>
+<header>
+  <div th:insert="~{header :: header}"></div>
+</header>
+<div class="container">
+  <div class="text-center">
+    <h1 th:text="'Редактирование информаци о клиенте №' + ${client.getId()}" th:if="${client != null}"></h1>
+  </div>
+
+  <hr class="my-4">
+
+  <form method="post" th:action="@{/client/refreshClientInfo}" th:object="${refreshClientData}" enctype="multipart/form-data">
+    <div class="row">
+      <div class="col-lg-8">
+        <table class="table caption-top table-bordered table-hover table-striped">
+          <tbody>
+          <input id="id" name="id" field="id" th:value="${client.getId()}" type="hidden" th:if="${client != null}" readonly required>
+          <tr>
+            <th>Название компании</th>
+            <td><input type="text" name="companyName" id="companyName" field="*{companyName}" th:value="${client.getCompanyName()}" required placeholder="ЗАО 'Радость'" class="form-control"></td>
+          </tr>
+          <tr>
+            <th>Номер телефона</th>
+            <td><input type="text" name="contactPhoneNumber" id="contactPhoneNumber" field="*{contactPhoneNumber}" th:value="${client.getContactPhoneNumber()}" required placeholder="+79991112233" class="form-control"></td>
+          </tr>
+          <tr>
+            <th>Имя контактного лица</th>
+            <td><input type="text" name="contactName" id="contactName" field="*{contactName}" th:value="${client.getContactName()}" required placeholder="Владимир" class="form-control"></td>
+          </tr>
+          <tr>
+            <th>Почта</th>
+            <td><input type="text" name="email" id="email" field="*{email}" th:value="${client.getEmail()}" required placeholder="vladimir@happy.ru" class="form-control"></td>
+          </tr>
+          <tr>
+            <th>Сайт</th>
+            <td><input type="text" name="website" id="website" field="*{website}" th:value="${client.getWebsite()}" required placeholder="happy.ru" class="form-control"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-primary" style="margin-bottom: 3px">Сохранить</button>
+      </div>
+    </div>
+  </form>
+</div>
+</body>
+</html>

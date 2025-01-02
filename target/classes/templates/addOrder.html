@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание заказа</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <script>
+        function addNewClientFields() {
+            const clientFields = document.getElementById('newClientFields');
+            clientFields.style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+    function limitText(limitField, limitNum) {
+        if (limitField.value.length > limitNum) {
+            limitField.value = limitField.value.substring(0, limitNum);
+        }
+    }
+</script>
+<header>
+    <div th:insert="~{header :: header}"></div>
+</header>
+<div class="container">
+    <div class="text-center">
+        <h1>Создание заказа</h1>
+    </div>
+
+    <hr class="my-4">
+
+    <form method="post" th:action="@{/order/addNew/{orderId}(orderId=${-1})}" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-lg-8">
+                <table class="table caption-top table-bordered table-hover table-striped">
+                    <tbody>
+                    <tr>
+                        <th>Счет на оплату</th>
+                        <td><input id="score" name="score" type="file" required placeholder="Счет на оплату" class="form-control-file"></td>
+                    </tr>
+                    <tr>
+                        <th>Статус платежа</th>
+                        <td>
+                            <input name="paymentStatus" type="text" required class="form-control"
+                                   placeholder="Статус платежа" value="Не оплачено"
+                                   onKeyDown="limitText(this,100);" onKeyUp="limitText(this,100);">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Комментарий к заказу</th>
+                        <td>
+                            <textarea name="comment" cols="40" rows="5" type="text" class="form-control" placeholder="Комментарий"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Макет</th>
+                        <td><input id="meketList" name="meketList" required type="file" placeholder="Макет(-ы)" class="form-control-file" multiple></td>
+                    </tr>
+                    <tr>
+                        <th>Бланк заказа</th>
+                        <td><input id="blankOrder" name="blankOrder" required type="file" placeholder="Макет(-ы)" class="form-control-file"></td>
+                    </tr>
+                    <tr>
+                        <th>Станок</th>
+                        <td><select id="machine" name="machine" required>
+                            <option disabled selected value hidden>Не выбран</option>
+                            <option th:each="machineType, machineStat : ${machineTypes}" th:value="${machineStat.index}" th:text="${machineType}">
+                            </option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <th>Дата выдачи заказа</th>
+                        <td>
+                            <input name="finishOrderDate" type="date" required>
+                        </td>
+                    </tr>
+                    <!-- Поле для заказчика с выпадающим списком -->
+                    <tr>
+                        <th>Заказчик</th>
+                        <td>
+                            <input list="clientList" id="clientName" name="clientName" class="form-control" placeholder="Выберите заказчика">
+                            <datalist id="clientList">
+                                <option th:each="client : ${clientsList}"
+                                        th:value="${client.getCompanyName()}">
+                            </datalist>
+                            <div class="row">
+                                <div class="col-sm-auto">
+                                    <button type="button" class="btn btn-link" onclick="addNewClientFields()">Добавить нового заказчика</button>
+                                </div>
+                            </div>
+                            <div id="newClientFields" style="display: none;">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <th>Название организации</th>
+                                        <td><input type="text" class="form-control" id="newClientName"
+                                                   name="newClientName" placeholder="Название организации"
+                                                   onKeyDown="limitText(this,100);" onKeyUp="limitText(this,100);"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Номер телефона</th>
+                                        <td><input type="tel" class="form-control" id="newClientPhone"
+                                                   name="newClientPhone" placeholder="Номер телефона"
+                                                    onKeyDown="limitText(this,100);" onKeyUp="limitText(this,100);"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Имя контактного лица</th>
+                                        <td><input type="text" class="form-control" id="newClientContact"
+                                                   name="newClientContact" placeholder="Имя контактного лица"
+                                                    onKeyDown="limitText(this,100);" onKeyUp="limitText(this,100);"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Почта</th>
+                                        <td><input type="email" class="form-control" id="newClientEmail"
+                                                   name="newClientEmail" placeholder="Почта"
+                                                    onKeyDown="limitText(this,100);" onKeyUp="limitText(this,100);"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Сайт</th>
+                                        <td><input type="url" class="form-control" id="newClientWebsite"
+                                                   name="newClientWebsite" placeholder="Сайт"
+                                                    onKeyDown="limitText(this,100);" onKeyUp="limitText(this,100);"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Кнопка для создания заказа -->
+        <div class="row">
+            <div class="col-sm-auto">
+                <button type="submit" class="btn btn-primary" style="margin-bottom: 3px">Создать</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
