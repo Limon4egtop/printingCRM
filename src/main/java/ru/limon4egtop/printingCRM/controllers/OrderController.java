@@ -80,22 +80,21 @@ public class OrderController {
 
     @PostMapping("/search")
     public String searchOrders(
-            @RequestParam(name = "orderNumber", required = false) Long orderNumber,
-            @RequestParam(name = "companyName", required = false) String companyName,
-            @RequestParam(name = "managerName", required = false) String managerName,
-            @RequestParam(name = "paymentStatus", required = false) String paymentStatus,
-            @RequestParam(name = "comment", required = false) String comment,
-            @RequestParam(name = "dateEnd", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd,
+            @RequestParam(name = "orderNumber", required = false) final Long orderNumber,
+            @RequestParam(name = "companyName", required = false) final String companyName,
+            @RequestParam(name = "managerName", required = false) final String managerName,
+            @RequestParam(name = "paymentStatus", required = false) final String paymentStatus,
+            @RequestParam(name = "orderStatus", required = false) final String orderStatus,
+            @RequestParam(name = "comment", required = false) final String comment,
+            @RequestParam(name = "dateEnd", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate dateEnd,
             Model model) {
-        // TODO: добавить обработку orderStatus
         String currentUsername = isOwner() ? null : getAuthenticationUserId();
         List<Orders> orders = orderRepo.findOrdersByFilters(
-                orderNumber, companyName, managerName, paymentStatus, comment, dateEnd, currentUsername);
+                orderNumber, companyName, managerName, paymentStatus, orderStatus, comment, dateEnd, currentUsername);
         model.addAttribute("orders", orders);
         model.addAttribute("clientsMap", getCompanysMap());
         model.addAttribute("employeeMap", getEmployeeMap());
         // TODO: избавиться от getCompanysMap и getEmployeeMap путем наследования mainController
-        // TODO: добавить проверку на роль ищущего сотрудника. владельцу - все результаты, менеджеру - только его заказы
         return "mainPage";
     }
 

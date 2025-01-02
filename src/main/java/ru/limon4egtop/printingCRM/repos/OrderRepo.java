@@ -38,6 +38,7 @@ public interface OrderRepo extends JpaRepository<Orders, Long> {
             )
         )
       AND (:paymentStatus IS NULL OR o.paymentStatus LIKE CONCAT('%', :paymentStatus, '%'))
+      AND (:orderStatus IS NULL OR o.orderStatus LIKE CONCAT('%', :orderStatus, '%'))
       AND (:comment IS NULL OR o.comment LIKE CONCAT('%', :comment, '%'))
       AND (CAST(:dateEnd AS date) IS NULL OR o.dateEnd = CAST(:dateEnd AS date))
       AND (:currentUsername IS NULL OR o.managerUsername = :currentUsername)
@@ -48,6 +49,7 @@ public interface OrderRepo extends JpaRepository<Orders, Long> {
             @Param("companyName") String companyName,
             @Param("managerName") String managerName,
             @Param("paymentStatus") String paymentStatus,
+            @Param("orderStatus") String orderStatus,
             @Param("comment") String comment,
             @Param("dateEnd") LocalDate dateEnd,
             @Param("currentUsername") String currentUsername

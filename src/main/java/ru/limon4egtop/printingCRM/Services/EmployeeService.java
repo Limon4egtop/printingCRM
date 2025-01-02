@@ -38,10 +38,16 @@ public class EmployeeService implements UserDetailsService {
         Employee employee = Employee.builder()
                 .username(putEmployee.getUsername())
                 .password(new BCryptPasswordEncoder().encode(putEmployee.getPassword()))
-                .authorities(putEmployee.getAuthorities().toString())
+                .authorities(putEmployee.getAuthorities().stream().findFirst().get().toString())
                 .firstName(putEmployee.getFirstName())
                 .lastName(putEmployee.getLastName())
                 .build();
+        employeeRepo.save(employee);
+    }
+
+    public void updatePassword(Employee putEmployee) {
+        Employee employee = employeeRepo.findById(putEmployee.getId()).get();
+        employee.setPassword(new BCryptPasswordEncoder().encode(putEmployee.getPassword()));
         employeeRepo.save(employee);
     }
 

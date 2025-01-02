@@ -42,6 +42,19 @@ public class EmployeeController {
         return new RedirectView("/employee/list");
     }
 
+    @GetMapping("/editPussword/{employeeId}")
+    public String editPussword(@PathVariable("employeeId") final Long employeeId,
+                               Model model) {
+        model.addAttribute("userId", employeeId);
+        return "editEmployeePussword";
+    }
+
+    @PostMapping("/putPassword")
+    public RedirectView putPassword(@ModelAttribute("Employee") final Employee employee) {
+        employeeService.updatePassword(employee);
+        return new RedirectView("/employee/list");
+    }
+
     // TODO: добавить возможность изменить пароль
     // TODO: добавить страницу редактирования информации о сотруднике
 }
