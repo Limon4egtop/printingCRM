@@ -36,7 +36,7 @@ public class EmployeeController {
         return "viewEmployee";
     }
 
-    @PostMapping("/putEmployee")
+    @PostMapping("/put")
     public RedirectView putEmployee(@ModelAttribute("Employee") final Employee employee) {
         employeeService.create(employee);
         return new RedirectView("/employee/list");

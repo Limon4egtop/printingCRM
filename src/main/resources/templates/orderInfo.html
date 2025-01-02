@@ -56,10 +56,16 @@
                         <th>Дата выдачи заказа</th>
                         <td><a th:text="${orderInfo.getDateEnd()}"></a>
                     </tr>
-
+                    <tr>
+                        <th>Статус заказа</th>
+                        <td><a th:text="${orderInfo.getOrderStatus()}"></a></td>
+                    </tr>
                     </tbody>
                 </table>
                 <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')" class="btn btn-warning" th:href="@{/order/edit/{orderId}(orderId=${orderInfo.getId()})}" role="button">Редактировать</a>
+                <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')" th:if="${orderInfo.getOrderStatus() == 'Новый'}" class="btn btn-success" th:href="@{/order/edit/sendOnPrint/{orderId}(orderId=${orderInfo.getId()})}" role="button">Передать на печать</a>
+                <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_PRINTER')" th:if="${orderInfo.getOrderStatus() == 'На печати'}" class="btn btn-success" th:href="@{/order/edit/readyForDelivery/{orderId}(orderId=${orderInfo.getId()})}" role="button">Напечатан</a>
+                <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')" th:if="${orderInfo.getOrderStatus() == 'Готов к выдаче'}" class="btn btn-danger" th:href="@{/order/edit/issued/{orderId}(orderId=${orderInfo.getId()})}" role="button">Выдать заказ</a>
             </div>
             <div class="col-3 p-3" sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">
                 <table class="table caption-top table-bordered table-hover table-striped">

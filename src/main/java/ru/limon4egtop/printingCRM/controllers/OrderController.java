@@ -65,7 +65,10 @@ public class OrderController {
                                     Principal principal,
                                     Model model) {
         String currentUsername = principal.getName();
-        if (!hasAccessToOrder(orderId, currentUsername)) {
+        boolean isPrinterWithAccess = employeeRepo.findByUsername(currentUsername).getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PRINTER"));
+
+        if (!hasAccessToOrder(orderId, currentUsername) || isPrinterWithAccess) {
             return "error/error-403";
         }
         Orders order = orderRepo.findOrdersById(orderId);
@@ -84,6 +87,7 @@ public class OrderController {
             @RequestParam(name = "comment", required = false) String comment,
             @RequestParam(name = "dateEnd", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd,
             Model model) {
+        // TODO: добавить обработку orderStatus
         String currentUsername = isOwner() ? null : getAuthenticationUserId();
         List<Orders> orders = orderRepo.findOrdersByFilters(
                 orderNumber, companyName, managerName, paymentStatus, comment, dateEnd, currentUsername);
@@ -317,6 +321,31 @@ public class OrderController {
         return ResponseEntity.badRequest().build();
     }
 
+    @GetMapping("/edit/sendOnPrint/{orderId}")
+    private String sendOnPrint(@PathVariable("orderId") Long orderId) {
+
+        Orders order = orderRepo.findById(orderId).get();
+        order.setOrderStatus("На печати");
+        orderRepo.save(order);
+        return "redirect:/order/info/" + orderId;
+    }
+
+    @GetMapping("/edit/readyForDelivery/{orderId}")
+    private String readyForDelivery(@PathVariable("orderId") Long orderId) {
+        Orders order = orderRepo.findById(orderId).get();
+        order.setOrderStatus("Готов к выдаче");
+        orderRepo.save(order);
+        return "redirect:/";
+    }
+
+    @GetMapping("/edit/issued/{orderId}")
+    private String issued(@PathVariable("orderId") Long orderId) {
+        Orders order = orderRepo.findById(orderId).get();
+        order.setOrderStatus("Выдан");
+        orderRepo.save(order);
+        return "redirect:/order/info/" + orderId;
+    }
+
     private boolean hasAccessToOrder(Long orderId, String username) {
         Orders order = orderRepo.findOrdersById(orderId);
         if (order == null) {
@@ -324,7 +353,7 @@ public class OrderController {
         }
 
         boolean isPrinterWithAccess = employeeRepo.findByUsername(username).getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("[ROLE_PRINTER]")) && Boolean.TRUE.equals(order.getSentPrinting());
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PRINTER")) && Boolean.TRUE.equals(Objects.equals(order.getOrderStatus(), "На печати"));
 
         boolean isUserOwner = employeeRepo.findByUsername(username).getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"));

@@ -30,9 +30,10 @@
                 <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Заказчик</th>
+                    <th scope="col" sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">Заказчик</th>
                     <th scope="col" sec:authorize="hasRole('ROLE_OWNER')">Менеджер</th>
-                    <th scope="col">Статус платежа</th>
+                    <th scope="col" sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">Статус платежа</th>
+                    <th scope="col">Статус заказа</th>
                     <th scope="col">Комментарий</th>
                     <th scope="col">Дата выдачи</th>
                     <th scope="col">Действие</th>
@@ -41,14 +42,23 @@
                     <th>
                         <input type="text" name="orderNumber" id="orderNumber" class="form-control" placeholder="Поиск по ID">
                     </th>
-                    <th>
+                    <th sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">
                         <input type="text" name="companyName" id="companyName" class="form-control" placeholder="Поиск по заказчику">
                     </th>
                     <th sec:authorize="hasRole('ROLE_OWNER')">
                         <input type="text" name="managerName" id="managerName" class="form-control" placeholder="Поиск по менеджеру">
                     </th>
-                    <th>
+                    <th sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">
                         <input type="text" name="paymentStatus" id="paymentStatus" class="form-control" placeholder="Поиск по статусу">
+                    </th>
+                    <th>
+                        <select name="orderStatus" id="orderStatus" class="form-select">
+                            <option value="" selected>Все</option>
+                            <option value="Новый">Новый</option>
+                            <option value="На печати">На печати</option>
+                            <option value="Готов к выдаче">Готов к выдаче</option>
+                            <option value="Выдан">Выдан</option>
+                        </select>
                     </th>
                     <th>
                         <input type="text" name="comment" id="comment" class="form-control" placeholder="Поиск по комментарию">
@@ -73,9 +83,10 @@
                         <div th:each="orderData, orderStat : ${orders}">
                             <tr>
                                 <th scope="row"><a th:text="${orderData.getId()}" th:href="${'/order/info/' + orderData.getId()}">0</a></th>
-                                <td><a th:text="${clientsMap.get(orderData.getClientId())}">заказчик_err</a></td>
+                                <td sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')"><a th:text="${clientsMap.get(orderData.getClientId())}">заказчик_err</a></td>
                                 <td sec:authorize="hasRole('ROLE_OWNER')"><a th:text="${employeeMap.get(orderData.getManagerUsername())}">менеджер_err</a></td>
-                                <td><a th:text="${orderData.getPaymentStatus()}">статус_err</a></td>
+                                <td sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')"><a th:text="${orderData.getPaymentStatus()}">статус_платежа_err</a></td>
+                                <td><a th:text="${orderData.getOrderStatus()}">статус_заказа_err</a></td>
                                 <td>
                                     <a th:text="${orderData.getComment()}"
                                        style="display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30ch;">
@@ -84,7 +95,7 @@
                                 </td>
                                 <td><a th:text="${orderData.getDateEnd()}">дата_выдачи_err</a></td>
                                 <td>
-                                    <a class="btn btn-outline-primary btn-sm" th:href="@{/order/edit/{orderId}(orderId=${orderData.getId()})}" role="button">
+                                    <a sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')" class="btn btn-outline-primary btn-sm" th:href="@{/order/edit/{orderId}(orderId=${orderData.getId()})}" role="button">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                             <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
                                             <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path>

@@ -28,12 +28,12 @@ public class EmployeeService implements UserDetailsService {
     }
 
     public void create(Employee putEmployee) {
-        System.out.println("id " + putEmployee.getId());
-        System.out.println("username " + putEmployee.getUsername());
-        System.out.println("password " + putEmployee.getPassword());
-        System.out.println("firstName " + putEmployee.getFirstName());
-        System.out.println("lastName " + putEmployee.getLastName());
-        System.out.println("role " + putEmployee.getAuthorities());
+//        System.out.println("id " + putEmployee.getId());
+//        System.out.println("username " + putEmployee.getUsername());
+//        System.out.println("password " + putEmployee.getPassword());
+//        System.out.println("firstName " + putEmployee.getFirstName());
+//        System.out.println("lastName " + putEmployee.getLastName());
+//        System.out.println("role " + putEmployee.getAuthorities().stream().findFirst().get());
         // Кодирует пароль и создаёт новый объект пользователя
         Employee employee = Employee.builder()
                 .username(putEmployee.getUsername())
@@ -42,8 +42,6 @@ public class EmployeeService implements UserDetailsService {
                 .firstName(putEmployee.getFirstName())
                 .lastName(putEmployee.getLastName())
                 .build();
-
-        // Сохраняет нового пользователя в базе данных
         employeeRepo.save(employee);
     }
 

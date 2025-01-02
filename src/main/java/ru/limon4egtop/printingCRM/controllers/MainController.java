@@ -40,13 +40,31 @@ public class MainController {
 
     @GetMapping("/")
     public String getMainPage(Model model) {
-        model.addAttribute("orders",
-                isOwner() ? orderRepo.findAllByOrderByIdDesc()
-                        : orderRepo.findOrdersByManagerUsernameOrderByIdDesc(getAuthenticationUserId()));
-        model.addAttribute("clientsMap", getCompanysMap());
-        model.addAttribute("employeeMap", getEmployeeMap());
+        String authenticatedUserId = getAuthenticationUserId();
+        boolean isOwner = isOwner();
+
+        // Определяем, является ли пользователь с ролью ROLE_PRINTER
+        boolean isPrinter = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_PRINTER"));
+
+        boolean isManager = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_MANAGER"));
+
+        // Выборка заказов в зависимости от роли
+        if (isOwner) {
+            model.addAttribute("orders", orderRepo.findAllByOrderByIdDesc());
+            model.addAttribute("employeeMap", getEmployeeMap());
+            model.addAttribute("clientsMap", getCompanysMap());
+        } else if (isManager) {
+            model.addAttribute("orders", orderRepo.findOrdersByManagerUsernameOrderByIdDesc(authenticatedUserId));
+            model.addAttribute("clientsMap", getCompanysMap());
+        }
+        else if (isPrinter) {
+            model.addAttribute("orders", orderRepo.findOrdersByOrderStatus("На печати"));
+        }
         return "mainPage";
     }
+
 
     // TODO: добавить пагинацию
     // TODO: добавить наследование от mainController

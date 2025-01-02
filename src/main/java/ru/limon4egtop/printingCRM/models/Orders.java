@@ -18,8 +18,7 @@ public class Orders {
     private LocalDate dateCreate;
     private LocalDate dateEnd;
     private Machine machine;
-    private Boolean isSentPrinting;
-    private Boolean isPrinted;
+    private String orderStatus;
 
     public Orders(Long id, Long clientId, String managerUsername, String paymentStatus, String comment, LocalDate dateCreate, LocalDate dateEnd, Machine machine) {
         this.id = id;
@@ -30,14 +29,12 @@ public class Orders {
         this.dateCreate = dateCreate;
         this.dateEnd = dateEnd;
         this.machine = machine;
-        this.isSentPrinting = false;
-        this.isPrinted = false;
+        this.orderStatus = "Новый";
     }
 
     public Orders() {
         this.dateCreate = LocalDate.now();
-        this.isSentPrinting = false;
-        this.isPrinted = false;
+        this.orderStatus = "Новый";
     }
 
 
@@ -105,19 +102,11 @@ public class Orders {
         this.machine = machine;
     }
 
-    public Boolean getSentPrinting() {
-        return isSentPrinting;
+    public String getOrderStatus() {
+        return orderStatus;
     }
 
-    public void setSentPrinting(Boolean sentPrinting) {
-        isSentPrinting = sentPrinting;
-    }
-
-    public Boolean getPrinted() {
-        return isPrinted;
-    }
-
-    public void setPrinted(Boolean printed) {
-        isPrinted = printed;
+    public void setOrderStatus(String orderStatus) {
+        this.orderStatus = orderStatus;
     }
 }

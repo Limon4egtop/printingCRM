@@ -16,6 +16,8 @@ public interface OrderRepo extends JpaRepository<Orders, Long> {
     List<Orders> findOrdersByClientIdOrderByIdDesc(Long clientId);
     List<Orders> findOrdersByManagerUsernameOrderByIdDesc(String managerUsername);
     List<Orders> findOrdersByClientIdAndManagerUsernameOrderByIdDesc(Long clientId, String currentUsername);
+    List<Orders> findOrdersByOrderStatus(String orderStatus);
+
 
     @Query("""
     SELECT o FROM Orders o
