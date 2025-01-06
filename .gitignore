@@ -24,3 +24,6 @@ hs_err_pid*
 replay_pid*
 
 src/main/resources/application.properties
+src/main/resources/static/documents/blankOrder
+src/main/resources/static/documents/maket
+src/main/resources/static/documents/score

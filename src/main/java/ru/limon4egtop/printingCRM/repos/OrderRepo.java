@@ -12,10 +12,10 @@ import java.util.List;
 @Repository
 public interface OrderRepo extends JpaRepository<Orders, Long> {
     Orders findOrdersById(Long orderId);
-    List<Orders> findAllByOrderByIdDesc();
-    List<Orders> findOrdersByClientIdOrderByIdDesc(Long clientId);
-    List<Orders> findOrdersByManagerUsernameOrderByIdDesc(String managerUsername);
-    List<Orders> findOrdersByClientIdAndManagerUsernameOrderByIdDesc(Long clientId, String currentUsername);
+    List<Orders> findAllByOrderByDateCreateDescIdDesc();
+    List<Orders> findOrdersByClientIdOrderByDateCreateDescIdDesc(Long clientId);
+    List<Orders> findOrdersByManagerUsernameOrderByDateCreateDescIdDesc(String managerUsername);
+    List<Orders> findOrdersByClientIdAndManagerUsernameOrderByDateCreateDescIdDesc(Long clientId, String currentUsername);
     List<Orders> findOrdersByOrderStatus(String orderStatus);
 
 
@@ -42,7 +42,7 @@ public interface OrderRepo extends JpaRepository<Orders, Long> {
       AND (:comment IS NULL OR o.comment LIKE CONCAT('%', :comment, '%'))
       AND (CAST(:dateEnd AS date) IS NULL OR o.dateEnd = CAST(:dateEnd AS date))
       AND (:currentUsername IS NULL OR o.managerUsername = :currentUsername)
-    ORDER BY o.id DESC
+    ORDER BY o.dateCreate DESC
 """)
     List<Orders> findOrdersByFilters(
             @Param("id") Long id,

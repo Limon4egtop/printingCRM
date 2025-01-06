@@ -52,11 +52,11 @@ public class MainController {
 
         // Выборка заказов в зависимости от роли
         if (isOwner) {
-            model.addAttribute("orders", orderRepo.findAllByOrderByIdDesc());
+            model.addAttribute("orders", orderRepo.findAllByOrderByDateCreateDescIdDesc());
             model.addAttribute("employeeMap", getEmployeeMap());
             model.addAttribute("clientsMap", getCompanysMap());
         } else if (isManager) {
-            model.addAttribute("orders", orderRepo.findOrdersByManagerUsernameOrderByIdDesc(authenticatedUserId));
+            model.addAttribute("orders", orderRepo.findOrdersByManagerUsernameOrderByDateCreateDescIdDesc(authenticatedUserId));
             model.addAttribute("clientsMap", getCompanysMap());
         }
         else if (isPrinter) {

@@ -55,9 +55,9 @@ public class ClientController {
                 .getAuthorities()
                 .stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"))) {
-            model.addAttribute("orders", orderRepo.findOrdersByClientIdOrderByIdDesc(clientId));
+            model.addAttribute("orders", orderRepo.findOrdersByClientIdOrderByDateCreateDescIdDesc(clientId));
         } else {
-            List<Orders> ordersList = orderRepo.findOrdersByClientIdAndManagerUsernameOrderByIdDesc(clientId, currentUsername);
+            List<Orders> ordersList = orderRepo.findOrdersByClientIdAndManagerUsernameOrderByDateCreateDescIdDesc(clientId, currentUsername);
             if (ordersList.isEmpty()) {
                 return "error/error-403";
             }
