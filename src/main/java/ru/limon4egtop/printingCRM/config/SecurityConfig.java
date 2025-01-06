@@ -12,23 +12,23 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import ru.limon4egtop.printingCRM.Services.EmployeeService;
+import ru.limon4egtop.printingCRM.Services.impl.EmployeeServiceImp;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private EmployeeService employeeService;
+    private EmployeeServiceImp employeeServiceImp;
 
     @Autowired
-    public void setEmployeeService(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+    public void setEmployeeService(EmployeeServiceImp employeeServiceImp) {
+        this.employeeServiceImp = employeeServiceImp;
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(employeeService);
+        provider.setUserDetailsService(employeeServiceImp);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }

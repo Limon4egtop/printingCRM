@@ -6,7 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class filesPath {
+public class FilesPath {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -14,20 +14,20 @@ public class filesPath {
     private String fileType;
     private String fileUrl;
 
-    public filesPath(Long id, Long orderId, String fileType, String fileName) {
+    public FilesPath(Long id, Long orderId, String fileType, String fileName) {
         this.id = id;
         this.orderId = orderId;
         this.fileType = fileType;
         this.fileUrl = fileName;
     }
 
-    public filesPath(Long orderId, String fileType, String fileUrl) {
+    public FilesPath(Long orderId, String fileType, String fileUrl) {
         this.orderId = orderId;
         this.fileType = fileType;
         this.fileUrl = fileUrl;
     }
 
-    public filesPath() {
+    public FilesPath() {
 
     }
 

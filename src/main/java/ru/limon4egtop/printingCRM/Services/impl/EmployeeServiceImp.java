@@ -1,4 +1,4 @@
-package ru.limon4egtop.printingCRM.Services;
+package ru.limon4egtop.printingCRM.Services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,18 +12,17 @@ import ru.limon4egtop.printingCRM.repos.EmployeeRepo;
 import java.util.List;
 import java.util.Optional;
 
-@Service // Помечает этот класс как компонент сервиса для внедрения зависимостей
-public class EmployeeService implements UserDetailsService {
+@Service
+public class EmployeeServiceImp implements UserDetailsService {
     private EmployeeRepo employeeRepo;
 
     @Autowired
-    public EmployeeService(EmployeeRepo employeeRepo) {
+    public EmployeeServiceImp(EmployeeRepo employeeRepo) {
         this.employeeRepo = employeeRepo;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Извлекает данные пользователя из базы данных по имени пользователя
         return employeeRepo.findByUsername(username);
     }
 
@@ -55,7 +54,7 @@ public class EmployeeService implements UserDetailsService {
         return employeeRepo.findAll();
     }
 
-    public Optional<Employee> getEmployeeById(Long id) {
-        return employeeRepo.findById(id);
+    public Employee getEmployeeById(Long id) {
+        return employeeRepo.findById(id).orElseThrow(() -> new RuntimeException("Не найден сотрудник с id: " + id));
     }
 }

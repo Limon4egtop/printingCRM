@@ -5,9 +5,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
 import ru.limon4egtop.printingCRM.models.Clients;
 import ru.limon4egtop.printingCRM.models.Employee;
-import ru.limon4egtop.printingCRM.repos.ClientRepo;
 import ru.limon4egtop.printingCRM.repos.EmployeeRepo;
 import ru.limon4egtop.printingCRM.repos.OrderRepo;
 
@@ -17,14 +17,14 @@ import java.util.stream.Collectors;
 @Controller
 public class MainController {
     private OrderRepo orderRepo;
-    private ClientRepo clientRepo;
     private EmployeeRepo employeeRepo;
+    protected ClientsServiceImp clientsServiceImp;
 
     @Autowired
-    public MainController(OrderRepo orderRepo, ClientRepo clientRepo, EmployeeRepo employeeRepo) {
+    public MainController(OrderRepo orderRepo, EmployeeRepo employeeRepo, final ClientsServiceImp clientsServiceImp) {
         this.orderRepo = orderRepo;
-        this.clientRepo = clientRepo;
         this.employeeRepo = employeeRepo;
+        this.clientsServiceImp = clientsServiceImp;
     }
 
     protected String getAuthenticationUserId() {
@@ -76,7 +76,7 @@ public class MainController {
     }
 
     protected Map<Long, String> getCompanysMap() {
-        return clientRepo.findAll().stream()
+        return clientsServiceImp.getAllClients().stream()
                 .collect(Collectors.toMap(Clients::getId, Clients::getCompanyName));
     }
 

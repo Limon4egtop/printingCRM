@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
+import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
 import ru.limon4egtop.printingCRM.models.Clients;
 import ru.limon4egtop.printingCRM.models.Orders;
 import ru.limon4egtop.printingCRM.repos.ClientRepo;
@@ -20,12 +21,12 @@ import java.util.List;
 @RequestMapping("/client")
 public class ClientController {
     private OrderRepo orderRepo;
-    ClientRepo clientRepo;
+    private ClientsServiceImp clientsServiceImp;
 
     @Autowired
-    public ClientController(ClientRepo clientRepo, OrderRepo orderRepo) {
-        this.clientRepo = clientRepo;
+    public ClientController(OrderRepo orderRepo, final ClientsServiceImp clientsServiceImp) {
         this.orderRepo = orderRepo;
+        this.clientsServiceImp = clientsServiceImp;
     }
 
     @GetMapping("/list")
@@ -37,7 +38,7 @@ public class ClientController {
                     .anyMatch(authority -> authority.getAuthority().equals("ROLE_OWNER"));
 
             if (isOwner) {
-                model.addAttribute("clients", clientRepo.findAllByOrderByIdDesc());
+                model.addAttribute("clients", this.clientsServiceImp.getAllClientsOrderByIdDesc());
                 return "clientsPage";
             }
         }
@@ -47,8 +48,8 @@ public class ClientController {
 
     @GetMapping("/clientInfo/{clientId}")
     public String getOrderInfoPage(Model model,
-                                   @PathVariable("clientId") Long clientId,
-                                   Principal principal) {
+                                   @PathVariable("clientId") final Long clientId,
+                                   final Principal principal) {
         String currentUsername = principal.getName();
 
         if (SecurityContextHolder.getContext().getAuthentication()
@@ -64,7 +65,7 @@ public class ClientController {
             model.addAttribute("orders", ordersList);
         }
 
-        model.addAttribute("clientInfo", clientRepo.findById(clientId).orElse(null));
+        model.addAttribute("clientInfo", this.clientsServiceImp.getClientByID(clientId));
 
         return "clientInfo";
     }
@@ -73,14 +74,14 @@ public class ClientController {
     @GetMapping("/editClient/{clientId}")
     private String getEditOrderPage(@PathVariable("clientId") final Long clientId,
                                     Model model) {
-        Clients client = clientRepo.findById(clientId).get();
+        Clients client = this.clientsServiceImp.getClientByID(clientId);
         model.addAttribute("client", client);
         return "editClient";
     }
 
     @PostMapping("/refreshClientInfo")
     public RedirectView refreshClientInfo(@ModelAttribute("refreshClientData") final Clients client) {
-        clientRepo.save(client);
+        this.clientsServiceImp.addClient(client);
         return new RedirectView("/client/clientInfo/"+client.getId());
     }
 }

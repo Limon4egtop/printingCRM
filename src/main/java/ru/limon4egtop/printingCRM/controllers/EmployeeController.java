@@ -5,17 +5,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
-import ru.limon4egtop.printingCRM.Services.EmployeeService;
+import ru.limon4egtop.printingCRM.Services.impl.EmployeeServiceImp;
 import ru.limon4egtop.printingCRM.models.Employee;
 
 @Controller
 @RequestMapping("/employee")
 public class EmployeeController {
-    EmployeeService employeeService;
+    EmployeeServiceImp employeeServiceImp;
 
     @Autowired
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+    public EmployeeController(EmployeeServiceImp employeeServiceImp) {
+        this.employeeServiceImp = employeeServiceImp;
     }
 
     @GetMapping("/create")
@@ -25,20 +25,20 @@ public class EmployeeController {
 
     @GetMapping("/list")
     public String listEmployees(Model model) {
-        model.addAttribute("usersData", employeeService.getAllEmployees());
+        model.addAttribute("usersData", this.employeeServiceImp.getAllEmployees());
         return "listEmployees";
     }
 
     @GetMapping("/view/{employeeId}")
-    public String viewEmployee(@PathVariable("employeeId") Long employeeId,
+    public String viewEmployee(@PathVariable("employeeId") final Long employeeId,
                                Model model) {
-        model.addAttribute("userData", employeeService.getEmployeeById(employeeId).get());
+        model.addAttribute("userData", this.employeeServiceImp.getEmployeeById(employeeId));
         return "viewEmployee";
     }
 
     @PostMapping("/put")
     public RedirectView putEmployee(@ModelAttribute("Employee") final Employee employee) {
-        employeeService.create(employee);
+        this.employeeServiceImp.create(employee);
         return new RedirectView("/employee/list");
     }
 
@@ -51,7 +51,7 @@ public class EmployeeController {
 
     @PostMapping("/putPassword")
     public RedirectView putPassword(@ModelAttribute("Employee") final Employee employee) {
-        employeeService.updatePassword(employee);
+        this.employeeServiceImp.updatePassword(employee);
         return new RedirectView("/employee/list");
     }
 
