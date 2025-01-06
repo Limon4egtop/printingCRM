@@ -23,8 +23,8 @@ public class ClientsServiceImp implements ClientsService {
     }
 
     @Override
-    public void updateClient(Clients client) {
-        this.clientRepo.save(client);
+    public Clients updateClient(Clients client) {
+        return this.clientRepo.save(client);
     }
 
     @Override

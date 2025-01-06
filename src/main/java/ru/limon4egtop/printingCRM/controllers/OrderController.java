@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
+import ru.limon4egtop.printingCRM.Services.impl.FilesPathServiceImp;
 import ru.limon4egtop.printingCRM.models.*;
 import ru.limon4egtop.printingCRM.repos.EmployeeRepo;
-import ru.limon4egtop.printingCRM.repos.FilesPathRepo;
 import ru.limon4egtop.printingCRM.repos.OrderRepo;
 
 import java.io.IOException;
@@ -37,16 +37,16 @@ import java.util.zip.ZipOutputStream;
 @RequestMapping("/order")
 public class OrderController {
     private OrderRepo orderRepo;
-    private FilesPathRepo filesPathRepo;
     private EmployeeRepo employeeRepo;
     private ClientsServiceImp clientsServiceImp;
+    private FilesPathServiceImp filesPathServiceImp;
 
     @Autowired
-    public OrderController(OrderRepo orderRepo, FilesPathRepo filesPathRepo, EmployeeRepo employeeRepo, final ClientsServiceImp clientsServiceImp) {
+    public OrderController(OrderRepo orderRepo, EmployeeRepo employeeRepo, final ClientsServiceImp clientsServiceImp, final FilesPathServiceImp filesPathServiceImp) {
         this.orderRepo = orderRepo;
-        this.filesPathRepo = filesPathRepo;
         this.employeeRepo = employeeRepo;
         this.clientsServiceImp = clientsServiceImp;
+        this.filesPathServiceImp = filesPathServiceImp;
     }
 
     private String getAuthenticationUserId() {
@@ -183,7 +183,7 @@ public class OrderController {
     private void saveScore(final MultipartFile score,
                            final Long orderId,
                            final String staticFolderPath) throws IOException {
-        List<FilesPath> filesData = filesPathRepo.findByOrderIdAndFileType(orderId, "scope");
+        List<FilesPath> filesData = this.filesPathServiceImp.getByOrderIdAndFileType(orderId, "scope");
         if (!filesData.isEmpty() && score.getBytes().length > 0) {
             deleteFile(filesData, staticFolderPath);
         }
@@ -193,14 +193,14 @@ public class OrderController {
             Path scorePath = Paths.get(staticFolderPath+"/documents/score", fileName);
             Files.write(scorePath, score.getBytes());
             FilesPath newFile = new FilesPath(orderId, "scope", "/documents/score/"+fileName);
-            filesPathRepo.save(newFile);
+            this.filesPathServiceImp.addFile(newFile);
         }
     }
 
     private void saveMaketList(final MultipartFile[] meketList,
                                final Long orderId,
                                final String staticFolderPath) throws IOException {
-        List<FilesPath> filesData = filesPathRepo.findByOrderIdAndFileType(orderId, "layout");
+        List<FilesPath> filesData = this.filesPathServiceImp.getByOrderIdAndFileType(orderId, "layout");
         if (!filesData.isEmpty() && meketList.length >= 1) {
             deleteFile(filesData, staticFolderPath);
         }
@@ -211,7 +211,7 @@ public class OrderController {
                 Path meketListPath = Paths.get(staticFolderPath + "/documents/maket", fileName);
                 Files.write(meketListPath, meketList[i].getBytes());
                 FilesPath newFile = new FilesPath(orderId, "layout", "/documents/maket/" + fileName);
-                filesPathRepo.save(newFile);
+                this.filesPathServiceImp.addFile(newFile);
             }
         }
     }
@@ -219,7 +219,7 @@ public class OrderController {
     private void saveBlankOrder(final MultipartFile blankOrder,
                                   final Long orderId,
                                   final String staticFolderPath) throws IOException {
-        List<FilesPath> filesData = filesPathRepo.findByOrderIdAndFileType(orderId, "blank");
+        List<FilesPath> filesData = this.filesPathServiceImp.getByOrderIdAndFileType(orderId, "blank");
         if (!filesData.isEmpty() && blankOrder.getBytes().length > 0) {
             deleteFile(filesData, staticFolderPath);
         }
@@ -229,7 +229,7 @@ public class OrderController {
             Path blankOrderPath = Paths.get(staticFolderPath+"/documents/blankOrder", fileName);
             Files.write(blankOrderPath, blankOrder.getBytes());
             FilesPath newFile = new FilesPath(orderId, "blank", "/documents/blankOrder/"+fileName);
-            filesPathRepo.save(newFile);
+            this.filesPathServiceImp.addFile(newFile);
         }
     }
 
@@ -238,7 +238,7 @@ public class OrderController {
             Path path = Paths.get(staticFolderPath + file.getFileUrl());
             try {
                 Files.delete(path);
-                filesPathRepo.delete(file);
+                this.filesPathServiceImp.deleteFile(file);
             } catch (IOException e) {
                 throw new IOException("Ошибка при удалении файла: " + path, e);
             }
@@ -255,7 +255,7 @@ public class OrderController {
         }
         Orders order = orderRepo.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
         model.addAttribute("orderInfo", order);
-        List<FilesPath> filesPathList = filesPathRepo.findByOrderIdAndFileType(orderId, "layout");
+        List<FilesPath> filesPathList = this.filesPathServiceImp.getByOrderIdAndFileType(orderId, "layout");
         model.addAttribute("filesPathList", filesPathList);
         model.addAttribute("clientCompany", this.clientsServiceImp.getClientByID(order.getClientId()));
         return "orderInfo";
@@ -271,7 +271,7 @@ public class OrderController {
             return ResponseEntity.status(403).build(); // Возврат 403 статуса, если доступ запрещён
         }
 
-        List<FilesPath> filesPathList = filesPathRepo.findByOrderIdAndFileType(orderId, fileType);
+        List<FilesPath> filesPathList = this.filesPathServiceImp.getByOrderIdAndFileType(orderId, fileType);
 
         if (Objects.equals(fileType, "blank") || Objects.equals(fileType, "scope")) {
             String fileUrl = "/Users/vladimirfilimonov/IdeaProjects/printingCRM/src/main/resources/static" + filesPathList.get(0).getFileUrl();     // TODO: исправить, чтобы брался не из системы, а из проекта

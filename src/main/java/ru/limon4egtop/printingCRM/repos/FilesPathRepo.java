@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface FilesPathRepo extends JpaRepository<FilesPath, Long> {
     List<FilesPath> findByOrderIdAndFileType(Long orderId, String fileType);
-    Integer countByOrderIdAndFileType(Long orderId, String fileType);
+//    Integer countByOrderIdAndFileType(Long orderId, String fileType);
 }
