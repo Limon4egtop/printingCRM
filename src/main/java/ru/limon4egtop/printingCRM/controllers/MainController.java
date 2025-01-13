@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 
 @Controller
 public class MainController {
-    protected ClientsServiceImp clientsServiceImp;
-    protected OrderServiceImp orderServiceImp;
-    protected EmployeeServiceImp employeeServiceImp;
+    protected final ClientsServiceImp clientsServiceImp;
+    protected final OrderServiceImp orderServiceImp;
+    protected final EmployeeServiceImp employeeServiceImp;
 
     @Autowired
     public MainController(final ClientsServiceImp clientsServiceImp, final OrderServiceImp orderServiceImp, final EmployeeServiceImp employeeServiceImp) {

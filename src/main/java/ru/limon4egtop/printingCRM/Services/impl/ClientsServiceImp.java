@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 public class ClientsServiceImp implements ClientsService {
-    private ClientRepo clientRepo;
+    private final ClientRepo clientRepo;
 
     @Autowired
     public ClientsServiceImp(ClientRepo clientRepo) {

@@ -10,11 +10,10 @@ import ru.limon4egtop.printingCRM.models.Employee;
 import ru.limon4egtop.printingCRM.repos.EmployeeRepo;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EmployeeServiceImp implements UserDetailsService {
-    private EmployeeRepo employeeRepo;
+    private final EmployeeRepo employeeRepo;
 
     @Autowired
     public EmployeeServiceImp(EmployeeRepo employeeRepo) {

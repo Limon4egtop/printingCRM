@@ -11,7 +11,7 @@ import ru.limon4egtop.printingCRM.models.Employee;
 @Controller
 @RequestMapping("/employee")
 public class EmployeeController {
-    EmployeeServiceImp employeeServiceImp;
+    private final EmployeeServiceImp employeeServiceImp;
 
     @Autowired
     public EmployeeController(EmployeeServiceImp employeeServiceImp) {
