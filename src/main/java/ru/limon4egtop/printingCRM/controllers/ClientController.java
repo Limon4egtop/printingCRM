@@ -19,8 +19,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/client")
 public class ClientController {
-    private ClientsServiceImp clientsServiceImp;
-    private OrderServiceImp orderServiceImp;
+    private final ClientsServiceImp clientsServiceImp;
+    private final OrderServiceImp orderServiceImp;
 
     @Autowired
     public ClientController(final ClientsServiceImp clientsServiceImp, final OrderServiceImp orderServiceImp) {

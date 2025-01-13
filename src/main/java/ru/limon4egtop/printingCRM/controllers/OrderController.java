@@ -36,10 +36,10 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/order")
 public class OrderController {
-    private ClientsServiceImp clientsServiceImp;
-    private FilesPathServiceImp filesPathServiceImp;
-    private OrderServiceImp orderServiceImp;
-    private EmployeeServiceImp employeeServiceImp;
+    private final ClientsServiceImp clientsServiceImp;
+    private final FilesPathServiceImp filesPathServiceImp;
+    private final OrderServiceImp orderServiceImp;
+    private final EmployeeServiceImp employeeServiceImp;
 
     @Autowired
     public OrderController(final ClientsServiceImp clientsServiceImp, final FilesPathServiceImp filesPathServiceImp, final OrderServiceImp orderServiceImp, final EmployeeServiceImp employeeServiceImp) {

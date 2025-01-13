@@ -3,7 +3,6 @@ package ru.limon4egtop.printingCRM.Services.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.limon4egtop.printingCRM.Services.OrderService;
-import ru.limon4egtop.printingCRM.dto.OrderFilterDto;
 import ru.limon4egtop.printingCRM.models.Orders;
 import ru.limon4egtop.printingCRM.repos.OrderRepo;
 
@@ -12,7 +11,7 @@ import java.util.List;
 
 @Service
 public class OrderServiceImp implements OrderService {
-    private OrderRepo orderRepo;
+    private final OrderRepo orderRepo;
 
     @Autowired
     public OrderServiceImp(OrderRepo orderRepo) {

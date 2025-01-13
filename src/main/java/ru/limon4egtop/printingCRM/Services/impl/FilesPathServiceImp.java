@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 public class FilesPathServiceImp implements FilesPathService {
-    private FilesPathRepo filesPathRepo;
+    private final FilesPathRepo filesPathRepo;
 
     @Autowired
     public FilesPathServiceImp(FilesPathRepo filesPathRepo) {
