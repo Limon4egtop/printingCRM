@@ -18,8 +18,7 @@ public interface OrderRepo extends JpaRepository<Orders, Long> {
     List<Orders> findOrdersByClientIdAndManagerUsernameOrderByDateCreateDescIdDesc(Long clientId, String currentUsername);
     List<Orders> findOrdersByOrderStatus(String orderStatus);
 
-
-    @Query("""
+@Query("""
     SELECT o FROM Orders o
     JOIN Clients c ON o.clientId = c.id
     LEFT JOIN Employee e ON o.managerUsername = e.username
@@ -44,15 +43,14 @@ public interface OrderRepo extends JpaRepository<Orders, Long> {
       AND (:currentUsername IS NULL OR o.managerUsername = :currentUsername)
     ORDER BY o.dateCreate DESC
 """)
-    List<Orders> findOrdersByFilters(
-            @Param("id") Long id,
-            @Param("companyName") String companyName,
-            @Param("managerName") String managerName,
-            @Param("paymentStatus") String paymentStatus,
-            @Param("orderStatus") String orderStatus,
-            @Param("comment") String comment,
-            @Param("dateEnd") LocalDate dateEnd,
-            @Param("currentUsername") String currentUsername
-    );
-
+List<Orders> findOrdersByFilters(
+        @Param("id") Long id,
+        @Param("companyName") String companyName,
+        @Param("managerName") String managerName,
+        @Param("paymentStatus") String paymentStatus,
+        @Param("orderStatus") String orderStatus,
+        @Param("comment") String comment,
+        @Param("dateEnd") LocalDate dateEnd,
+        @Param("currentUsername") String currentUsername
+);
 }

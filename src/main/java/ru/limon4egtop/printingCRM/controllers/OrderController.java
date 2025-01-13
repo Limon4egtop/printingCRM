@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
+import ru.limon4egtop.printingCRM.Services.impl.EmployeeServiceImp;
 import ru.limon4egtop.printingCRM.Services.impl.FilesPathServiceImp;
+import ru.limon4egtop.printingCRM.Services.impl.OrderServiceImp;
 import ru.limon4egtop.printingCRM.models.*;
-import ru.limon4egtop.printingCRM.repos.EmployeeRepo;
-import ru.limon4egtop.printingCRM.repos.OrderRepo;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,17 +36,17 @@ import java.util.zip.ZipOutputStream;
 @Controller
 @RequestMapping("/order")
 public class OrderController {
-    private OrderRepo orderRepo;
-    private EmployeeRepo employeeRepo;
     private ClientsServiceImp clientsServiceImp;
     private FilesPathServiceImp filesPathServiceImp;
+    private OrderServiceImp orderServiceImp;
+    private EmployeeServiceImp employeeServiceImp;
 
     @Autowired
-    public OrderController(OrderRepo orderRepo, EmployeeRepo employeeRepo, final ClientsServiceImp clientsServiceImp, final FilesPathServiceImp filesPathServiceImp) {
-        this.orderRepo = orderRepo;
-        this.employeeRepo = employeeRepo;
+    public OrderController(final ClientsServiceImp clientsServiceImp, final FilesPathServiceImp filesPathServiceImp, final OrderServiceImp orderServiceImp, final EmployeeServiceImp employeeServiceImp) {
         this.clientsServiceImp = clientsServiceImp;
         this.filesPathServiceImp = filesPathServiceImp;
+        this.orderServiceImp = orderServiceImp;
+        this.employeeServiceImp = employeeServiceImp;
     }
 
     private String getAuthenticationUserId() {
@@ -65,13 +65,13 @@ public class OrderController {
                                     final Principal principal,
                                     Model model) {
         String currentUsername = principal.getName();
-        boolean isPrinterWithAccess = employeeRepo.findByUsername(currentUsername).getAuthorities().stream()
+        boolean isPrinterWithAccess = this.employeeServiceImp.loadUserByUsername(currentUsername).getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_PRINTER"));
 
         if (!hasAccessToOrder(orderId, currentUsername) || isPrinterWithAccess) {
             return "error/error-403";
         }
-        Orders order = orderRepo.findOrdersById(orderId);
+        Orders order = this.orderServiceImp.getOrderById(orderId);
         model.addAttribute("order", order);
         model.addAttribute("clientName", this.clientsServiceImp.getClientByID(order.getClientId()).getCompanyName());
         model.addAttribute("machineTypes", Machine.values());
@@ -89,8 +89,17 @@ public class OrderController {
             @RequestParam(name = "dateEnd", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate dateEnd,
             Model model) {
         String currentUsername = isOwner() ? null : getAuthenticationUserId();
-        List<Orders> orders = orderRepo.findOrdersByFilters(
-                orderNumber, companyName, managerName, paymentStatus, orderStatus, comment, dateEnd, currentUsername);
+//        System.out.println("orderNumber: " + orderNumber);
+//        System.out.println("companyName: " + companyName);
+//        System.out.println("managerName: " + managerName);
+//        System.out.println("paymentStatus: " + paymentStatus);
+//        System.out.println("orderStatus: " + orderStatus);
+//        System.out.println("comment: " + comment);
+//        System.out.println("dateEnd: " + dateEnd);
+        if (orderNumber == null && companyName.isEmpty() && (managerName == null || managerName.isEmpty()) && paymentStatus.isEmpty() && orderStatus.isEmpty() && comment.isEmpty() && dateEnd == null) {
+            return "redirect:/";
+        }
+        List<Orders> orders = this.orderServiceImp.getOrdersByFilters(orderNumber, companyName, managerName, paymentStatus, orderStatus, comment, dateEnd, currentUsername);
         model.addAttribute("orders", orders);
         model.addAttribute("clientsMap", getCompanysMap());
         model.addAttribute("employeeMap", getEmployeeMap());
@@ -99,7 +108,7 @@ public class OrderController {
     }
 
     private Map<String, String> getEmployeeMap() {
-        return employeeRepo.findAll().stream()
+        return this.employeeServiceImp.getAllEmployees().stream()
                 .collect(Collectors.toMap(Employee::getUsername, employee -> employee.getFirstName() + " " + employee.getLastName()));
     }
 
@@ -133,7 +142,7 @@ public class OrderController {
                                @RequestParam(name = "newClientWebsite", required = false) final String newClientWebsite) throws IOException {
         Orders newOrder = new Orders();
         if (editOrderId != null && editOrderId != -1) {
-            newOrder = orderRepo.findOrdersById(editOrderId);
+            newOrder = this.orderServiceImp.getOrderById(editOrderId);
         }
         if (finishOrderDate != null) {
             newOrder.setDateEnd(LocalDate.parse(finishOrderDate));
@@ -172,7 +181,7 @@ public class OrderController {
         }
         newOrder.setClientId(clientId);
         newOrder.setManagerUsername(getAuthenticationUserId());
-        Long orderId = orderRepo.save(newOrder).getId();
+        Long orderId = this.orderServiceImp.addOrder(newOrder).getId();
         String staticFolderPath = "/Users/vladimirfilimonov/IdeaProjects/printingCRM/src/main/resources/static";
         saveScore(score, orderId, staticFolderPath);
         saveMaketList(meketList, orderId, staticFolderPath);
@@ -253,7 +262,7 @@ public class OrderController {
         if (!hasAccessToOrder(orderId, currentUsername)) {
             return "error/error-403";
         }
-        Orders order = orderRepo.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+        Orders order = this.orderServiceImp.getOrderById(orderId);
         model.addAttribute("orderInfo", order);
         List<FilesPath> filesPathList = this.filesPathServiceImp.getByOrderIdAndFileType(orderId, "layout");
         model.addAttribute("filesPathList", filesPathList);
@@ -322,38 +331,38 @@ public class OrderController {
     @GetMapping("/edit/sendOnPrint/{orderId}")
     private String sendOnPrint(@PathVariable("orderId") final Long orderId) {
 
-        Orders order = orderRepo.findById(orderId).get();
+        Orders order = this.orderServiceImp.getOrderById(orderId);
         order.setOrderStatus("На печати");
-        orderRepo.save(order);
+        this.orderServiceImp.addOrder(order);
         return "redirect:/order/info/" + orderId;
     }
 
     @GetMapping("/edit/readyForDelivery/{orderId}")
     private String readyForDelivery(@PathVariable("orderId") final Long orderId) {
-        Orders order = orderRepo.findById(orderId).get();
+        Orders order = this.orderServiceImp.getOrderById(orderId);
         order.setOrderStatus("Готов к выдаче");
-        orderRepo.save(order);
+        this.orderServiceImp.addOrder(order);
         return "redirect:/";
     }
 
     @GetMapping("/edit/issued/{orderId}")
     private String issued(@PathVariable("orderId") final Long orderId) {
-        Orders order = orderRepo.findById(orderId).get();
+        Orders order = this.orderServiceImp.getOrderById(orderId);
         order.setOrderStatus("Выдан");
-        orderRepo.save(order);
+        this.orderServiceImp.addOrder(order);
         return "redirect:/order/info/" + orderId;
     }
 
     private boolean hasAccessToOrder(final Long orderId, final String username) {
-        Orders order = orderRepo.findOrdersById(orderId);
+        Orders order = this.orderServiceImp.getOrderById(orderId);
         if (order == null) {
             throw new IllegalArgumentException("Order not found: " + orderId);
         }
 
-        boolean isPrinterWithAccess = employeeRepo.findByUsername(username).getAuthorities().stream()
+        boolean isPrinterWithAccess = this.employeeServiceImp.loadUserByUsername(username).getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_PRINTER")) && Boolean.TRUE.equals(Objects.equals(order.getOrderStatus(), "На печати"));
 
-        boolean isUserOwner = employeeRepo.findByUsername(username).getAuthorities().stream()
+        boolean isUserOwner = this.employeeServiceImp.loadUserByUsername(username).getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"));
 
         return order.getManagerUsername().equals(username) ||

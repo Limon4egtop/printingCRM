@@ -6,25 +6,25 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
+import ru.limon4egtop.printingCRM.Services.impl.EmployeeServiceImp;
+import ru.limon4egtop.printingCRM.Services.impl.OrderServiceImp;
 import ru.limon4egtop.printingCRM.models.Clients;
 import ru.limon4egtop.printingCRM.models.Employee;
-import ru.limon4egtop.printingCRM.repos.EmployeeRepo;
-import ru.limon4egtop.printingCRM.repos.OrderRepo;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
 public class MainController {
-    private OrderRepo orderRepo;
-    private EmployeeRepo employeeRepo;
     protected ClientsServiceImp clientsServiceImp;
+    protected OrderServiceImp orderServiceImp;
+    protected EmployeeServiceImp employeeServiceImp;
 
     @Autowired
-    public MainController(OrderRepo orderRepo, EmployeeRepo employeeRepo, final ClientsServiceImp clientsServiceImp) {
-        this.orderRepo = orderRepo;
-        this.employeeRepo = employeeRepo;
+    public MainController(final ClientsServiceImp clientsServiceImp, final OrderServiceImp orderServiceImp, final EmployeeServiceImp employeeServiceImp) {
         this.clientsServiceImp = clientsServiceImp;
+        this.orderServiceImp = orderServiceImp;
+        this.employeeServiceImp = employeeServiceImp;
     }
 
     protected String getAuthenticationUserId() {
@@ -52,15 +52,15 @@ public class MainController {
 
         // Выборка заказов в зависимости от роли
         if (isOwner) {
-            model.addAttribute("orders", orderRepo.findAllByOrderByDateCreateDescIdDesc());
+            model.addAttribute("orders", this.orderServiceImp.getAll());
             model.addAttribute("employeeMap", getEmployeeMap());
             model.addAttribute("clientsMap", getCompanysMap());
         } else if (isManager) {
-            model.addAttribute("orders", orderRepo.findOrdersByManagerUsernameOrderByDateCreateDescIdDesc(authenticatedUserId));
+            model.addAttribute("orders", this.orderServiceImp.getOrdersByManagerUsername(authenticatedUserId));
             model.addAttribute("clientsMap", getCompanysMap());
         }
         else if (isPrinter) {
-            model.addAttribute("orders", orderRepo.findOrdersByOrderStatus("На печати"));
+            model.addAttribute("orders", this.orderServiceImp.getOrdersByOrderStatus("На печати"));
         }
         return "mainPage";
     }
@@ -71,7 +71,7 @@ public class MainController {
     // TODO: добавить сервисы
 
     protected Map<String, String> getEmployeeMap() {
-        return employeeRepo.findAll().stream()
+        return this.employeeServiceImp.getAllEmployees().stream()
                 .collect(Collectors.toMap(Employee::getUsername, employee -> employee.getFirstName() + " " + employee.getLastName()));
     }
 

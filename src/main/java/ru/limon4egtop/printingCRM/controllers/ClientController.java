@@ -9,10 +9,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
+import ru.limon4egtop.printingCRM.Services.impl.OrderServiceImp;
 import ru.limon4egtop.printingCRM.models.Clients;
 import ru.limon4egtop.printingCRM.models.Orders;
-import ru.limon4egtop.printingCRM.repos.ClientRepo;
-import ru.limon4egtop.printingCRM.repos.OrderRepo;
 
 import java.security.Principal;
 import java.util.List;
@@ -20,13 +19,13 @@ import java.util.List;
 @Controller
 @RequestMapping("/client")
 public class ClientController {
-    private OrderRepo orderRepo;
     private ClientsServiceImp clientsServiceImp;
+    private OrderServiceImp orderServiceImp;
 
     @Autowired
-    public ClientController(OrderRepo orderRepo, final ClientsServiceImp clientsServiceImp) {
-        this.orderRepo = orderRepo;
+    public ClientController(final ClientsServiceImp clientsServiceImp, final OrderServiceImp orderServiceImp) {
         this.clientsServiceImp = clientsServiceImp;
+        this.orderServiceImp = orderServiceImp;
     }
 
     @GetMapping("/list")
@@ -56,9 +55,9 @@ public class ClientController {
                 .getAuthorities()
                 .stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"))) {
-            model.addAttribute("orders", orderRepo.findOrdersByClientIdOrderByDateCreateDescIdDesc(clientId));
+            model.addAttribute("orders", this.orderServiceImp.getOrdersByClientId(clientId));
         } else {
-            List<Orders> ordersList = orderRepo.findOrdersByClientIdAndManagerUsernameOrderByDateCreateDescIdDesc(clientId, currentUsername);
+            List<Orders> ordersList = this.orderServiceImp.getOrdersByClientIdAndManagerUsername(clientId, currentUsername);
             if (ordersList.isEmpty()) {
                 return "error/error-403";
             }
