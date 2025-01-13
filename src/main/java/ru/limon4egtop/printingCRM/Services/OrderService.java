@@ -21,4 +21,8 @@ public interface OrderService {
                                     final String comment,
                                     final LocalDate dateEnd,
                                     final String currentUsername);
+
+    List<Orders> getOrdersByFiltersForPrinter(final Long orderNumber,
+                                    final String comment,
+                                    final LocalDate dateEnd);
 }

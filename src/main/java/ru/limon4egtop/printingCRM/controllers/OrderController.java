@@ -78,10 +78,19 @@ public class OrderController extends MainController {
         if (orderNumber == null && (companyName == null || companyName.isEmpty()) && (managerName == null || managerName.isEmpty()) && (paymentStatus == null || paymentStatus.isEmpty()) && orderStatus.isEmpty() && comment.isEmpty() && dateEnd == null) {
             return "redirect:/";
         }
-        List<Orders> orders = this.orderServiceImp.getOrdersByFilters(orderNumber, companyName, managerName, paymentStatus, orderStatus, comment, dateEnd, currentUsername);
+        List<Orders> orders = null;
+        System.out.println("isPrinter() " + isPrinter());
+        System.out.println("isOwner() " + isOwner());
+        System.out.println("isManager() " + isManager());
+        if (isOwner() || isManager()) {
+             orders = this.orderServiceImp.getOrdersByFilters(orderNumber, companyName, managerName, paymentStatus, orderStatus, comment, dateEnd, currentUsername);
+            model.addAttribute("clientsMap", getCompanysMap());
+            model.addAttribute("employeeMap", getEmployeeMap());
+        }
+        else if (isPrinter()) {
+            orders = this.orderServiceImp.getOrdersByFiltersForPrinter(orderNumber, comment, dateEnd);
+        }
         model.addAttribute("orders", orders);
-        model.addAttribute("clientsMap", getCompanysMap());
-        model.addAttribute("employeeMap", getEmployeeMap());
         return "mainPage";
     }
 

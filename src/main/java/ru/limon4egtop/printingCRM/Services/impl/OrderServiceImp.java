@@ -63,7 +63,16 @@ public class OrderServiceImp implements OrderService {
                                            final String comment,
                                            final LocalDate dateEnd,
                                            final String currentUsername) {
-//        System.out.println(orderFilterDto.toString());
         return this.orderRepo.findOrdersByFilters(orderNumber, companyName, managerName, paymentStatus, orderStatus, comment, dateEnd, currentUsername);
     }
+
+    @Override
+    public List<Orders> getOrdersByFiltersForPrinter(final Long orderNumber,
+                                                     final String comment,
+                                                     final LocalDate dateEnd) {
+        System.out.println("Order search info: " + orderNumber  + " " + comment + " " + dateEnd);
+        return this.orderRepo.findOrdersByFiltersForPrinterRole(orderNumber, comment, dateEnd);
+    }
+
+
 }

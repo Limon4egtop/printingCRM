@@ -18,39 +18,53 @@ public interface OrderRepo extends JpaRepository<Orders, Long> {
     List<Orders> findOrdersByClientIdAndManagerUsernameOrderByDateCreateDescIdDesc(Long clientId, String currentUsername);
     List<Orders> findOrdersByOrderStatus(String orderStatus);
 
-@Query("""
-    SELECT o FROM Orders o
-    JOIN Clients c ON o.clientId = c.id
-    LEFT JOIN Employee e ON o.managerUsername = e.username
-    WHERE (:id IS NULL OR o.id = :id)
-      AND (:companyName IS NULL OR c.companyName LIKE CONCAT('%', :companyName, '%'))
-      AND (
-            :managerName IS NULL OR 
-            (
-                e.firstName IS NOT NULL AND e.lastName IS NOT NULL AND
+    @Query("""
+        SELECT o FROM Orders o
+        JOIN Clients c ON o.clientId = c.id
+        LEFT JOIN Employee e ON o.managerUsername = e.username
+        WHERE (:id IS NULL OR o.id = :id)
+          AND (:companyName IS NULL OR c.companyName LIKE CONCAT('%', :companyName, '%'))
+          AND (
+                :managerName IS NULL OR 
                 (
-                    e.firstName LIKE CONCAT('%', :managerName, '%') OR
-                    e.lastName LIKE CONCAT('%', :managerName, '%') OR
-                    CONCAT(e.firstName, ' ', e.lastName) LIKE CONCAT('%', :managerName, '%') OR
-                    CONCAT(e.lastName, ' ', e.firstName) LIKE CONCAT('%', :managerName, '%')
+                    e.firstName IS NOT NULL AND e.lastName IS NOT NULL AND
+                    (
+                        e.firstName LIKE CONCAT('%', :managerName, '%') OR
+                        e.lastName LIKE CONCAT('%', :managerName, '%') OR
+                        CONCAT(e.firstName, ' ', e.lastName) LIKE CONCAT('%', :managerName, '%') OR
+                        CONCAT(e.lastName, ' ', e.firstName) LIKE CONCAT('%', :managerName, '%')
+                    )
                 )
             )
-        )
-      AND (:paymentStatus IS NULL OR o.paymentStatus LIKE CONCAT('%', :paymentStatus, '%'))
-      AND (:orderStatus IS NULL OR o.orderStatus LIKE CONCAT('%', :orderStatus, '%'))
+          AND (:paymentStatus IS NULL OR o.paymentStatus LIKE CONCAT('%', :paymentStatus, '%'))
+          AND (:orderStatus IS NULL OR o.orderStatus LIKE CONCAT('%', :orderStatus, '%'))
+          AND (:comment IS NULL OR o.comment LIKE CONCAT('%', :comment, '%'))
+          AND (CAST(:dateEnd AS date) IS NULL OR o.dateEnd = CAST(:dateEnd AS date))
+          AND (:currentUsername IS NULL OR o.managerUsername = :currentUsername)
+        ORDER BY o.dateCreate DESC
+    """)
+    List<Orders> findOrdersByFilters(
+            @Param("id") Long id,
+            @Param("companyName") String companyName,
+            @Param("managerName") String managerName,
+            @Param("paymentStatus") String paymentStatus,
+            @Param("orderStatus") String orderStatus,
+            @Param("comment") String comment,
+            @Param("dateEnd") LocalDate dateEnd,
+            @Param("currentUsername") String currentUsername
+    );
+
+    @Query("""
+    SELECT o FROM Orders o
+    WHERE (:id IS NULL OR o.id = :id)
+      AND (o.orderStatus LIKE 'На печати')
       AND (:comment IS NULL OR o.comment LIKE CONCAT('%', :comment, '%'))
       AND (CAST(:dateEnd AS date) IS NULL OR o.dateEnd = CAST(:dateEnd AS date))
-      AND (:currentUsername IS NULL OR o.managerUsername = :currentUsername)
     ORDER BY o.dateCreate DESC
 """)
-List<Orders> findOrdersByFilters(
-        @Param("id") Long id,
-        @Param("companyName") String companyName,
-        @Param("managerName") String managerName,
-        @Param("paymentStatus") String paymentStatus,
-        @Param("orderStatus") String orderStatus,
-        @Param("comment") String comment,
-        @Param("dateEnd") LocalDate dateEnd,
-        @Param("currentUsername") String currentUsername
-);
+    List<Orders> findOrdersByFiltersForPrinterRole(
+            @Param("id") Long id,
+            @Param("comment") String comment,
+            @Param("dateEnd") LocalDate dateEnd
+    );
 }
