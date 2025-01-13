@@ -3,8 +3,6 @@ package ru.limon4egtop.printingCRM.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
 import ru.limon4egtop.printingCRM.Services.impl.EmployeeServiceImp;
 import ru.limon4egtop.printingCRM.Services.impl.OrderServiceImp;
@@ -12,6 +10,7 @@ import ru.limon4egtop.printingCRM.models.Clients;
 import ru.limon4egtop.printingCRM.models.Employee;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Controller
@@ -32,43 +31,30 @@ public class MainController {
     }
 
     protected Boolean isOwner() {
-        boolean hasRoleAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_OWNER"));
-        ;
-        return hasRoleAdmin;
     }
 
-    @GetMapping("/")
-    public String getMainPage(Model model) {
-        String authenticatedUserId = getAuthenticationUserId();
-        boolean isOwner = isOwner();
+    protected Boolean isUserOwner(final String username) {
+        return this.employeeServiceImp.loadUserByUsername(username).getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"));
+    }
 
-        // Определяем, является ли пользователь с ролью ROLE_PRINTER
-        boolean isPrinter = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_PRINTER"));
-
-        boolean isManager = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+    protected Boolean isManager() {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_MANAGER"));
-
-        // Выборка заказов в зависимости от роли
-        if (isOwner) {
-            model.addAttribute("orders", this.orderServiceImp.getAll());
-            model.addAttribute("employeeMap", getEmployeeMap());
-            model.addAttribute("clientsMap", getCompanysMap());
-        } else if (isManager) {
-            model.addAttribute("orders", this.orderServiceImp.getOrdersByManagerUsername(authenticatedUserId));
-            model.addAttribute("clientsMap", getCompanysMap());
-        }
-        else if (isPrinter) {
-            model.addAttribute("orders", this.orderServiceImp.getOrdersByOrderStatus("На печати"));
-        }
-        return "mainPage";
     }
 
+    protected Boolean isPrinter() {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_PRINTER"));
+    }
 
-    // TODO: добавить пагинацию
-    // TODO: добавить наследование от mainController
-    // TODO: добавить сервисы
+    protected Boolean isPrinterWithAccess(final String username,
+                                          final String orderStatus) {
+        return this.employeeServiceImp.loadUserByUsername(username).getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PRINTER")) && Boolean.TRUE.equals(Objects.equals(orderStatus, "На печати"));
+    }
 
     protected Map<String, String> getEmployeeMap() {
         return this.employeeServiceImp.getAllEmployees().stream()
@@ -79,6 +65,6 @@ public class MainController {
         return clientsServiceImp.getAllClients().stream()
                 .collect(Collectors.toMap(Clients::getId, Clients::getCompanyName));
     }
-
-
 }
+
+// TODO: добавить пагинацию

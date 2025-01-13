@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import ru.limon4egtop.printingCRM.Services.impl.ClientsServiceImp;
+import ru.limon4egtop.printingCRM.Services.impl.EmployeeServiceImp;
 import ru.limon4egtop.printingCRM.Services.impl.OrderServiceImp;
 import ru.limon4egtop.printingCRM.models.Clients;
 import ru.limon4egtop.printingCRM.models.Orders;
@@ -18,14 +19,11 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/client")
-public class ClientController {
-    private final ClientsServiceImp clientsServiceImp;
-    private final OrderServiceImp orderServiceImp;
+public class ClientController extends MainController {
 
     @Autowired
-    public ClientController(final ClientsServiceImp clientsServiceImp, final OrderServiceImp orderServiceImp) {
-        this.clientsServiceImp = clientsServiceImp;
-        this.orderServiceImp = orderServiceImp;
+    public ClientController(final ClientsServiceImp clientsServiceImp, final OrderServiceImp orderServiceImp, final EmployeeServiceImp employeeServiceImp) {
+        super(clientsServiceImp, orderServiceImp, employeeServiceImp);
     }
 
     @GetMapping("/list")
@@ -33,10 +31,7 @@ public class ClientController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            boolean isOwner = authentication.getAuthorities().stream()
-                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_OWNER"));
-
-            if (isOwner) {
+            if (isOwner()) {
                 model.addAttribute("clients", this.clientsServiceImp.getAllClientsOrderByIdDesc());
                 return "clientsPage";
             }
@@ -51,17 +46,16 @@ public class ClientController {
                                    final Principal principal) {
         String currentUsername = principal.getName();
 
-        if (SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities()
-                .stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"))) {
+        if (isOwner()) {
             model.addAttribute("orders", this.orderServiceImp.getOrdersByClientId(clientId));
-        } else {
+        } else if (isManager()) {
             List<Orders> ordersList = this.orderServiceImp.getOrdersByClientIdAndManagerUsername(clientId, currentUsername);
             if (ordersList.isEmpty()) {
                 return "error/error-403";
             }
             model.addAttribute("orders", ordersList);
+        } else {
+            return "error/error-403";
         }
 
         model.addAttribute("clientInfo", this.clientsServiceImp.getClientByID(clientId));
@@ -80,6 +74,9 @@ public class ClientController {
 
     @PostMapping("/refreshClientInfo")
     public RedirectView refreshClientInfo(@ModelAttribute("refreshClientData") final Clients client) {
+        if (!isOwner() || !isManager()) {
+            return new RedirectView("/error/customError");
+        }
         this.clientsServiceImp.addClient(client);
         return new RedirectView("/client/clientInfo/"+client.getId());
     }

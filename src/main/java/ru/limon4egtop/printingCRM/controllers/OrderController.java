@@ -7,7 +7,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,30 +26,19 @@ import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Controller
 @RequestMapping("/order")
-public class OrderController {
-    private final ClientsServiceImp clientsServiceImp;
+public class OrderController extends MainController {
     private final FilesPathServiceImp filesPathServiceImp;
-    private final OrderServiceImp orderServiceImp;
-    private final EmployeeServiceImp employeeServiceImp;
 
     @Autowired
     public OrderController(final ClientsServiceImp clientsServiceImp, final FilesPathServiceImp filesPathServiceImp, final OrderServiceImp orderServiceImp, final EmployeeServiceImp employeeServiceImp) {
-        this.clientsServiceImp = clientsServiceImp;
+        super(clientsServiceImp, orderServiceImp, employeeServiceImp);
         this.filesPathServiceImp = filesPathServiceImp;
-        this.orderServiceImp = orderServiceImp;
-        this.employeeServiceImp = employeeServiceImp;
-    }
-
-    private String getAuthenticationUserId() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
     @PostMapping("/add")
@@ -65,12 +53,10 @@ public class OrderController {
                                     final Principal principal,
                                     Model model) {
         String currentUsername = principal.getName();
-        boolean isPrinterWithAccess = this.employeeServiceImp.loadUserByUsername(currentUsername).getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PRINTER"));
-
-        if (!hasAccessToOrder(orderId, currentUsername) || isPrinterWithAccess) {
+        if (!hasAccessToOrder(orderId, currentUsername) || isPrinter()) {
             return "error/error-403";
         }
+
         Orders order = this.orderServiceImp.getOrderById(orderId);
         model.addAttribute("order", order);
         model.addAttribute("clientName", this.clientsServiceImp.getClientByID(order.getClientId()).getCompanyName());
@@ -89,40 +75,14 @@ public class OrderController {
             @RequestParam(name = "dateEnd", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate dateEnd,
             Model model) {
         String currentUsername = isOwner() ? null : getAuthenticationUserId();
-//        System.out.println("orderNumber: " + orderNumber);
-//        System.out.println("companyName: " + companyName);
-//        System.out.println("managerName: " + managerName);
-//        System.out.println("paymentStatus: " + paymentStatus);
-//        System.out.println("orderStatus: " + orderStatus);
-//        System.out.println("comment: " + comment);
-//        System.out.println("dateEnd: " + dateEnd);
-        if (orderNumber == null && companyName.isEmpty() && (managerName == null || managerName.isEmpty()) && paymentStatus.isEmpty() && orderStatus.isEmpty() && comment.isEmpty() && dateEnd == null) {
+        if (orderNumber == null && (companyName == null || companyName.isEmpty()) && (managerName == null || managerName.isEmpty()) && (paymentStatus == null || paymentStatus.isEmpty()) && orderStatus.isEmpty() && comment.isEmpty() && dateEnd == null) {
             return "redirect:/";
         }
         List<Orders> orders = this.orderServiceImp.getOrdersByFilters(orderNumber, companyName, managerName, paymentStatus, orderStatus, comment, dateEnd, currentUsername);
         model.addAttribute("orders", orders);
         model.addAttribute("clientsMap", getCompanysMap());
         model.addAttribute("employeeMap", getEmployeeMap());
-        // TODO: избавиться от getCompanysMap и getEmployeeMap путем наследования mainController
         return "mainPage";
-    }
-
-    private Map<String, String> getEmployeeMap() {
-        return this.employeeServiceImp.getAllEmployees().stream()
-                .collect(Collectors.toMap(Employee::getUsername, employee -> employee.getFirstName() + " " + employee.getLastName()));
-    }
-
-
-    private Map<Long, String> getCompanysMap() {
-        return this.clientsServiceImp.getAllClients().stream()
-                .collect(Collectors.toMap(Clients::getId, Clients::getCompanyName));
-    }
-
-    private Boolean isOwner() {
-        boolean hasRoleAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_OWNER"));
-        ;
-        return hasRoleAdmin;
     }
 
     @PostMapping("/addNew/{orderId}")
@@ -177,7 +137,7 @@ public class OrderController {
             clientId = this.clientsServiceImp.addClient(newClient).getId();
         }
         if (clientId == null) {
-            return new RedirectView("/errorClientNameNull");
+            return new RedirectView("/error/errorClientNameNull");
         }
         newOrder.setClientId(clientId);
         newOrder.setManagerUsername(getAuthenticationUserId());
@@ -277,7 +237,7 @@ public class OrderController {
                                                     final Principal principal) throws IOException {
         String currentUsername = principal.getName();
         if (!hasAccessToOrder(orderId, currentUsername)) {
-            return ResponseEntity.status(403).build(); // Возврат 403 статуса, если доступ запрещён
+            return ResponseEntity.status(403).build();
         }
 
         List<FilesPath> filesPathList = this.filesPathServiceImp.getByOrderIdAndFileType(orderId, fileType);
@@ -358,16 +318,9 @@ public class OrderController {
         if (order == null) {
             throw new IllegalArgumentException("Order not found: " + orderId);
         }
-
-        boolean isPrinterWithAccess = this.employeeServiceImp.loadUserByUsername(username).getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_PRINTER")) && Boolean.TRUE.equals(Objects.equals(order.getOrderStatus(), "На печати"));
-
-        boolean isUserOwner = this.employeeServiceImp.loadUserByUsername(username).getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_OWNER"));
-
         return order.getManagerUsername().equals(username) ||
-                isUserOwner ||
-                isPrinterWithAccess;
+                isUserOwner(username) ||
+                isPrinterWithAccess(username, order.getOrderStatus());
     }
 }
 

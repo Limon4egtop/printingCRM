@@ -16,7 +16,7 @@
 
     <hr class="my-4">
 
-    <div class="row">
+    <div class="row" sec:authorize="hasAnyRole('ROLE_OWNER', 'ROLE_MANAGER')">
         <div class="text-end">
             <form method="post" action="/order/add">
                 <button type="submit" class="btn btn-success">Создать заказ</button>
